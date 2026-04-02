@@ -58,6 +58,7 @@ class AuthController extends Controller
     public function register(Request $request): JsonResponse
     {
         $request->validate([
+            'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => [
                 'required',
@@ -69,7 +70,7 @@ class AuthController extends Controller
         ]);
 
         $user = User::create([
-            'name' => explode('@', $request->email)[0],
+            'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($request->password),
             'tier' => 'freemium',

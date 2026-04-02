@@ -277,6 +277,7 @@ function LoginScreen({ onLogin, error, onShowEmailAuth }: { onLogin: () => void;
  * ═══════════════════════════════════════════════════════ */
 function EmailAuthModal({ onClose }: { onClose: () => void }) {
   const [step, setStep] = useState<'register' | 'verify' | 'login'>('register');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
@@ -285,9 +286,13 @@ function EmailAuthModal({ onClose }: { onClose: () => void }) {
 
   const handleRegister = async () => {
     setError('');
+    if (!name.trim()) {
+      setError('Please enter your full name');
+      return;
+    }
     setLoading(true);
     try {
-      await api.register(email, password);
+      await api.register(name.trim(), email, password);
       setStep('verify');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Registration failed');
@@ -336,6 +341,13 @@ function EmailAuthModal({ onClose }: { onClose: () => void }) {
 
         {step === 'register' && (
           <div className="space-y-3">
+            <input
+              type="text"
+              placeholder="Full name"
+              className="w-full px-4 py-3 rounded-xl bg-surface-container border border-outline-variant/30 text-on-surface text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+              value={name}
+              onChange={e => setName(e.target.value)}
+            />
             <input
               type="email"
               placeholder="Email address"

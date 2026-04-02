@@ -81,10 +81,10 @@ export async function loginWithGoogle(googleAccessToken: string): Promise<AuthRe
   return response;
 }
 
-export async function register(email: string, password: string): Promise<void> {
+export async function register(name: string, email: string, password: string): Promise<void> {
   await apiRequest<void>("/auth/register", {
     method: "POST",
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ name, email, password }),
   });
 }
 
