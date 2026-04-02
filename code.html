@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Cognitive Concierge - Job Matches</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "on-tertiary-fixed": "#380c00",
+                "surface-container-highest": "#e0e3e5",
+                "background": "#f7fafc",
+                "secondary-container": "#83fba5",
+                "primary-container": "#0077b5",
+                "on-primary-fixed": "#001d32",
+                "on-tertiary-fixed-variant": "#822800",
+                "surface-container-high": "#e5e9eb",
+                "surface-bright": "#f7fafc",
+                "on-tertiary-container": "#fff5f2",
+                "tertiary-container": "#be4f24",
+                "on-tertiary": "#ffffff",
+                "tertiary-fixed": "#ffdbcf",
+                "primary-fixed": "#cde5ff",
+                "tertiary-fixed-dim": "#ffb59c",
+                "surface-container-lowest": "#ffffff",
+                "on-primary": "#ffffff",
+                "on-primary-fixed-variant": "#004b74",
+                "tertiary": "#9d370c",
+                "surface": "#f7fafc",
+                "inverse-primary": "#93ccff",
+                "surface-variant": "#e0e3e5",
+                "surface-dim": "#d7dadc",
+                "secondary-fixed-dim": "#66dd8b",
+                "on-secondary": "#ffffff",
+                "on-error": "#ffffff",
+                "outline": "#707881",
+                "secondary-fixed": "#83fba5",
+                "on-secondary-fixed-variant": "#005227",
+                "on-primary-container": "#f3f7ff",
+                "secondary": "#006d36",
+                "outline-variant": "#bfc7d1",
+                "primary-fixed-dim": "#93ccff",
+                "on-surface": "#181c1e",
+                "surface-container": "#ebeef0",
+                "on-secondary-container": "#00743a",
+                "on-error-container": "#93000a",
+                "inverse-on-surface": "#eef1f3",
+                "on-background": "#181c1e",
+                "error-container": "#ffdad6",
+                "surface-container-low": "#f1f4f6",
+                "on-secondary-fixed": "#00210c",
+                "primary": "#005d8f",
+                "on-surface-variant": "#404850",
+                "inverse-surface": "#2d3133",
+                "surface-tint": "#006398",
+                "error": "#ba1a1a"
+              },
+              fontFamily: {
+                "headline": ["Manrope"],
+                "body": ["Inter"],
+                "label": ["Inter"]
+              },
+              borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "1.5rem", "full": "9999px"},
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-header {
+            background: rgba(247, 250, 252, 0.85);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="bg-background font-body text-on-background antialiased flex justify-center py-8">
+<!-- Chrome Extension Wrapper (450px) -->
+<main class="w-[450px] bg-surface min-h-[600px] shadow-[0px_12px_32px_-4px_rgba(24,28,30,0.06)] rounded-xl overflow-hidden flex flex-col relative">
+<!-- TopNavBar Execution -->
+<header class="glass-header sticky top-0 z-50 flex justify-between items-center w-full px-4 py-3">
+<div class="flex items-center gap-2">
+<span class="text-lg font-black tracking-tight text-sky-800">Cognitive Concierge</span>
+</div>
+<div class="flex items-center gap-3">
+<button class="p-2 rounded-full hover:bg-slate-200/50 transition-colors">
+<span class="material-symbols-outlined text-slate-500">notifications</span>
+</button>
+<img alt="User Profile Avatar" class="w-8 h-8 rounded-full object-cover" data-alt="Professional headshot of a smiling young man in a light blue shirt, clean studio lighting, soft focus background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDH3nMBTRiDmZFrU3qebu9o5P_hfdG-uT0XM7jmXY2rI6y-z3dx7arq-p4pravAbSg-6NTTOmgsJKReE7tyaZGatqaq03aBAMHxg0sqlWn7fwP4u5mn8xA0oFo5Kw7XgoQmFx7_dqCY773Yw0Rme1AFjf9HOt5J2KzjpatJvWcOYfVxQzbQ2EbkvpfL-RRstf_jS_hJWWHWgDLKFdYyBMTRmrBRcWxoTBMayBF25f1sISXhjESStoIT8vFGK4GLnYDpR2r5azzKWkk"/>
+</div>
+</header>
+<!-- Success Message Section -->
+<section class="px-6 pt-6 pb-4">
+<div class="bg-secondary-fixed/10 p-4 rounded-xl flex items-center gap-3 mb-6">
+<div class="bg-secondary-fixed text-on-secondary-fixed w-10 h-10 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div>
+<h1 class="font-headline font-extrabold text-lg text-on-surface leading-tight">CV Analyzed!</h1>
+<p class="text-sm text-on-surface-variant">We've found the best roles for your expertise.</p>
+</div>
+</div>
+<div class="flex justify-between items-end mb-4">
+<h2 class="font-headline font-bold text-2xl tracking-tight">Your Perfect Matches</h2>
+<span class="font-label text-[0.6875rem] font-semibold text-primary uppercase tracking-wider mb-1">Top Picks</span>
+</div>
+</section><div class="px-6 mb-6">
+<div class="bg-primary/5 border border-primary/10 rounded-xl p-4">
+<div class="flex justify-between items-center mb-2">
+<span class="text-[0.6875rem] font-bold text-on-surface-variant uppercase tracking-wider">Daily AI Usage</span>
+<span class="text-[0.6875rem] font-bold text-primary">1 of 10 used</span>
+</div>
+<div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden mb-4">
+<div class="bg-primary h-full w-[10%]"></div>
+</div>
+<p class="text-xs text-on-surface-variant mb-4">1 of 10 AI match analyses used today. Upgrade for unlimited scans.</p>
+<button class="w-full bg-on-primary-fixed text-white flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-bold shadow-sm hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-base" style="font-variation-settings: 'FILL' 1;">bolt</span>
+      Upgrade to Premium
+    </button>
+</div>
+</div>
+<!-- Job Cards List (Bento-style layout within a vertical container) -->
+<div class="px-6 flex flex-col gap-4 overflow-y-auto pb-6">
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest p-4 rounded-xl shadow-sm relative overflow-hidden transition-all hover:bg-surface-container-low">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="flex gap-4">
+<img alt="Company Logo" class="w-12 h-12 rounded-lg object-cover bg-slate-100 p-1" data-alt="Minimalist geometric logo icon for a tech company, navy blue and white, clean professional branding" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWzLUCCe0bOfccJwyFrYCcfFdv5LUXEkzoFa-XDzzaV_RPfXqZCYAHvkJdsno977NeIW56x0gL_nv8blVHfG9oBVZcvf9EK9b04xobwV07fQGFsqWIPxFLqzjzdsKp6e98eXu0jGIusS9hGqv7qZ0K6M2y22nof1me1B9756Xqddj7DN-pSvS9T4m8jSQ9Z-dBdqGoXFcGRxSIfsCFKOyC5h_GDG1rh4lUdxJIWMOOie0W3j07SIfqpDvCcLuMyrdlBnEHPY7GtM8"/>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h3 class="font-body font-bold text-base text-on-surface leading-tight">Senior UX Engineer</h3>
+<div class="bg-secondary-fixed/20 text-on-secondary-container px-2 py-0.5 rounded-md text-[0.6875rem] font-bold">
+                                98% Match
+                            </div>
+</div>
+<p class="text-sm font-medium text-primary mt-0.5">Nebula Systems</p>
+<div class="flex items-center gap-1 mt-2 text-slate-500">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="text-xs">San Francisco, CA (Remote)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest p-4 rounded-xl shadow-sm relative overflow-hidden transition-all hover:bg-surface-container-low">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="flex gap-4">
+<img alt="Company Logo" class="w-12 h-12 rounded-lg object-cover bg-slate-100 p-1" data-alt="Modern corporate logo featuring an abstract circular motif, vibrant orange and charcoal gray colors" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8td_BXJCun_7vLwZicAh_LtqZXcGGVdA2W2m8L6GUypZenLyP3nVqG1CSvth3dWHXLi2InuQAXwZmruaMX0XR4y0EoDdcqGU7wuxAEziB5IdUeOpy0yBCb2sFFhLRPXnYy95BrRYDWbLOn8heriXV6PHj5wyjemjvC42otdac43LHXs02deXRIYZjNJtN3a0h7xupAZe7C76eWQYfQ6XOEY9LrmrNmV_OnDqH-G1hLttlriVHtOQQ4Yxw6bcrdvvZKU8lG3KUHhw"/>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h3 class="font-body font-bold text-base text-on-surface leading-tight">Product Designer</h3>
+<div class="bg-secondary-fixed/20 text-on-secondary-container px-2 py-0.5 rounded-md text-[0.6875rem] font-bold">
+                                94% Match
+                            </div>
+</div>
+<p class="text-sm font-medium text-primary mt-0.5">Quantum Leap AI</p>
+<div class="flex items-center gap-1 mt-2 text-slate-500">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="text-xs">Austin, TX</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-lowest p-4 rounded-xl shadow-sm relative overflow-hidden transition-all hover:bg-surface-container-low">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="flex gap-4">
+<img alt="Company Logo" class="w-12 h-12 rounded-lg object-cover bg-slate-100 p-1" data-alt="Clean typographical logo with stylized letters, emerald green accent, professional tech aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqw103FDsIOH7EliE3puNDZRdBTfvDAlMszFs0R0WsJGO4MArVz1eDgRjXCYwfyck6ce5zjPcJJ1rnQL2mjSEYVZCIKmWeoMMOUIiSUXPmfh6TM2denolHtusjOZl8n44WssR0E4hTKdLWi0OPJ80fS7RqOZx28rYoMip6h_ZKXVzr5lv4YqYIDH9Witbn_ir-CuVe_qyf0v3Xvr0dcjfST0lLsfDnQO-a89h9atunVh9BHEkuNF-GK0OZ11QLdcjJ80z7IPBjbbs"/>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h3 class="font-body font-bold text-base text-on-surface leading-tight">UI Innovation Lead</h3>
+<div class="bg-secondary-fixed/20 text-on-secondary-container px-2 py-0.5 rounded-md text-[0.6875rem] font-bold">
+                                91% Match
+                            </div>
+</div>
+<p class="text-sm font-medium text-primary mt-0.5">FlowState Lab</p>
+<div class="flex items-center gap-1 mt-2 text-slate-500">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="text-xs">New York, NY (Hybrid)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Skill Gap Chip Example (Small highlight) -->
+<div class="mt-2">
+<p class="font-label text-[0.6875rem] font-bold text-on-surface-variant uppercase tracking-wider mb-2">Refine Your Profile</p>
+<div class="flex flex-wrap gap-2">
+<div class="bg-tertiary-container text-on-tertiary-container px-3 py-1 rounded-md text-xs font-semibold">
+                        Add Typescript
+                    </div>
+<div class="bg-tertiary-container text-on-tertiary-container px-3 py-1 rounded-md text-xs font-semibold">
+                        Showcase Figma Plugins
+                    </div>
+</div>
+</div>
+</div>
+<!-- CTA Action -->
+<div class="mt-auto px-6 py-6 bg-surface-container-low">
+<button class="w-full bg-gradient-to-br from-primary to-primary-container text-on-primary font-body font-bold py-3 px-6 rounded-full shadow-lg hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                View All Matches
+                <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+<!-- SideNavBar as Bottom Pivot (Responsive Pivot for Extension) -->
+<nav class="flex justify-around items-center bg-surface py-2 border-t border-outline-variant/10">
+<button class="flex flex-col items-center gap-0.5 text-sky-700 font-bold active:scale-95 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">work</span>
+<span class="font-label text-[0.6875rem]">Job Match</span>
+</button>
+<button class="flex flex-col items-center gap-0.5 text-slate-500 hover:text-sky-600 transition-colors">
+<span class="material-symbols-outlined">psychology</span>
+<span class="font-label text-[0.6875rem]">Skill Gaps</span>
+</button>
+<button class="flex flex-col items-center gap-0.5 text-slate-500 hover:text-sky-600 transition-colors">
+<span class="material-symbols-outlined">send</span>
+<span class="font-label text-[0.6875rem]">Applications</span>
+</button>
+<button class="flex flex-col items-center gap-0.5 text-slate-500 hover:text-sky-600 transition-colors">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label text-[0.6875rem]">Settings</span>
+</button>
+</nav>
+<!-- Footer -->
+<footer class="bg-surface py-3 text-center">
+<p class="text-[0.625rem] text-slate-400 font-medium tracking-widest uppercase">
+                AI-powered by JobHunt
+            </p>
+</footer>
+<!-- Glass Overlay Insight Card (Example of Glassmorphism Layer) -->
+<div class="absolute bottom-32 right-6 left-6 p-4 rounded-xl glass-header border border-white/20 shadow-2xl z-40 hidden group-hover:block">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary">auto_awesome</span>
+<div>
+<p class="text-xs font-bold text-primary">AI Insight</p>
+<p class="text-xs text-on-surface-variant">Your CV matches 9/10 core requirements for the Lead role at FlowState Lab.</p>
+</div>
+</div>
+</div>
+</main>
+</body></html>
