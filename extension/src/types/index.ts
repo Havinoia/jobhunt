@@ -15,9 +15,9 @@ export interface JobData {
 
 /* ─── AI Analysis Response ─── */
 export interface MatchResult {
-  matchScore: number; // 0-100
-  matchedSkills: string[];
-  missingSkills: string[];
+  matchScore: number;
+  matchedSkills: (string | { name: string; confidence: number })[];
+  missingSkills: (string | { name: string; confidence: number })[];
   summary: string;
 }
 
@@ -51,10 +51,10 @@ export interface ResumeReport {
     primary_domain: string;
   };
   extracted_data: {
-    skills_hard: string[];
-    skills_soft: string[];
-    tools_and_apps: string[];
-    credentials: string[];
+    skills_hard: (string | { name: string; confidence: number })[];
+    skills_soft: (string | { name: string; confidence: number })[];
+    tools_and_apps: (string | { name: string; confidence: number })[];
+    credentials: (string | { name: string; confidence: number })[];
   };
   job_recommendations: {
     role_title: string;
@@ -64,7 +64,7 @@ export interface ResumeReport {
     search_keywords: string[];
   }[];
   skill_gap_analysis: {
-    missing_common_skills: string[];
+    missing_common_skills: (string | { name: string; importance: string; reason: string })[];
     upskilling_suggestion: string;
   };
 }
@@ -74,7 +74,7 @@ export interface ResumeProfile {
   userId: string;
   originalFilename: string;
   category?: string;
-  extractedSkills: string[];
+  extractedSkills: (string | { name: string; confidence: number })[];
   report?: ResumeReport;
   updatedAt: string;
 }

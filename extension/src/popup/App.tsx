@@ -6,6 +6,7 @@ import type {
 } from "@/types";
 import { MessageType } from "@/types";
 import { sendToBackground } from "@/lib/messaging";
+import { getSkillName } from "@/lib/utils";
 import * as api from "@/lib/api";
 
 /* ═══════════════════════════════════════════════════════
@@ -640,13 +641,13 @@ function HomeTab({ user, usage, resume, isUploading, uploadError, onUploadCV, on
       </section>
 
       {/* ─── Recommended Jobs (LinkedIn Search) ─── */}
-      {resume && resume.report?.job_recommendations && (
-        <RecommendedJobs recommendations={resume.report.job_recommendations} />
+      {resume && (resume.report?.job_recommendations ?? []).length > 0 && (
+        <RecommendedJobs recommendations={resume.report!.job_recommendations} />
       )}
  
       {/* ─── Gap Analysis ─── */}
-      {resume && resume.report?.skill_gap_analysis && (
-        <GapAnalysis gapData={resume.report.skill_gap_analysis} />
+      {resume && (resume.report?.skill_gap_analysis?.missing_common_skills ?? []).length > 0 && (
+        <GapAnalysis gapData={resume.report!.skill_gap_analysis} />
       )}
 
       {/* ─── Skills Preview ─── */}
@@ -661,11 +662,14 @@ function HomeTab({ user, usage, resume, isUploading, uploadError, onUploadCV, on
             </span>
           </div>
           <div className="flex flex-wrap gap-1.5">
-            {resume.extractedSkills.slice(0, 12).map((skill) => (
-              <span key={skill} className="bg-secondary-fixed/20 text-on-secondary-container px-2.5 py-1 rounded-md text-xs font-semibold">
-                {skill}
-              </span>
-            ))}
+            {resume.extractedSkills.slice(0, 12).map((skill) => {
+              const name = getSkillName(skill);
+              return (
+                <span key={name} className="bg-secondary-fixed/20 text-on-secondary-container px-2.5 py-1 rounded-md text-xs font-semibold">
+                  {name}
+                </span>
+              );
+            })}
             {resume.extractedSkills.length > 12 && (
               <span className="text-body-sm text-on-surface-variant/60 self-center ml-1">
                 +{resume.extractedSkills.length - 12} more
@@ -822,11 +826,14 @@ function GapAnalysis({ gapData }: { gapData: NonNullable<ResumeProfile['report']
         <div>
           <p className="text-[10px] font-bold text-error uppercase tracking-wider mb-2">Missing Benchmarks</p>
           <div className="flex flex-wrap gap-1.5">
-            {gapData.missing_common_skills.map(skill => (
-              <span key={skill} className="px-2 py-0.5 bg-error-container/20 text-on-error-container rounded text-[10px] font-semibold">
-                {skill}
-              </span>
-            ))}
+            {gapData.missing_common_skills.map(skill => {
+              const skillName = getSkillName(skill);
+              return (
+                <span key={skillName} className="px-2 py-0.5 bg-error-container/20 text-on-error-container rounded text-[10px] font-semibold">
+                  {skillName}
+                </span>
+              );
+            })}
           </div>
         </div>
         
@@ -862,7 +869,7 @@ function SkillsTab({ resume }: { resume: ResumeProfile | null }) {
 
   const { extracted_data } = resume.report;
 
-  const SkillSection = ({ title, icon, skills }: { title: string; icon: string; skills: string[] }) => {
+  const SkillSection = ({ title, icon, skills }: { title: string; icon: string; skills: (string | { name: string; confidence: number })[] }) => {
     if (!skills || skills.length === 0) return null;
     return (
       <div className="mb-6">
@@ -871,11 +878,14 @@ function SkillsTab({ resume }: { resume: ResumeProfile | null }) {
           <h3 className="text-[11px] font-black uppercase tracking-[0.15em] text-on-surface-variant/70 italic">{title}</h3>
         </div>
         <div className="flex flex-wrap gap-2">
-          {skills.map(skill => (
-            <span key={skill} className="bg-surface-container-lowest ghost-border px-3 py-1.5 rounded-lg text-body-sm font-medium text-on-surface">
-              {skill}
-            </span>
-          ))}
+          {skills.map(skill => {
+            const name = getSkillName(skill);
+            return (
+              <span key={name} className="bg-surface-container-lowest ghost-border px-3 py-1.5 rounded-lg text-body-sm font-medium text-on-surface">
+                {name}
+              </span>
+            );
+          })}
         </div>
       </div>
     );

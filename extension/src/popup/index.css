@@ -10,7 +10,13 @@
 /* ─── Base Layer — Typography & Defaults ─── */
 @layer base {
   html,
-  body {
+  body,
+  #root {
+    width: 420px;
+    height: 560px;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
     @apply bg-surface text-on-surface font-body antialiased;
     font-size: 16px;
   }

@@ -12,6 +12,7 @@
  * ═══════════════════════════════════════════════════════ */
 
 import { useState, useCallback } from "react";
+import { getSkillName } from "@/lib/utils";
 import { scrapeLinkedInJob } from "@/lib/scraper";
 import { sendToBackground } from "@/lib/messaging";
 import { MessageType } from "@/types";
@@ -169,9 +170,10 @@ export default function LinkedInOverlay() {
                       Your Strengths
                     </p>
                     <div className="flex flex-wrap gap-1.5">
-                      {matchResult.matchedSkills.map((skill) => (
-                        <span key={skill} className="chip-match">{skill}</span>
-                      ))}
+                      {matchResult.matchedSkills.map((skill) => {
+                        const name = getSkillName(skill);
+                        return <span key={name} className="chip-match">{name}</span>;
+                      })}
                     </div>
                   </div>
                 )}
