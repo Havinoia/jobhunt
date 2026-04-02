@@ -25,6 +25,7 @@ class ResumeProfile extends Model
     protected $fillable = [
         'user_id',
         'original_filename',
+        'file_path',
         'category',
         'extracted_text',
         'extracted_skills',

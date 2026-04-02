@@ -44,6 +44,7 @@ class AuthController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
+                'avatar_url' => $user->avatar_url ? asset('storage/' . $user->avatar_url) : null,
                 'tier' => $user->tier,
             ],
             'usage' => $user->getUsageData(),
@@ -82,7 +83,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Verify the email with the 6‑digit code.
+     * Verify the email with the 6â€‘digit code.
      *
      * POST /auth/verify
      */
@@ -115,6 +116,7 @@ class AuthController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
+                'avatar_url' => $user->avatar_url ? asset('storage/' . $user->avatar_url) : null,
                 'tier' => $user->tier,
             ],
             'usage' => $user->getUsageData(),
@@ -150,6 +152,7 @@ class AuthController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
+                'avatar_url' => $user->avatar_url ? asset('storage/' . $user->avatar_url) : null,
                 'tier' => $user->tier,
             ],
             'usage' => $user->getUsageData(),
@@ -169,6 +172,7 @@ class AuthController extends Controller
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
+            'avatar_url' => $user->avatar_url ? asset('storage/' . $user->avatar_url) : null,
             'tier' => $user->tier,
             'usage' => $user->getUsageData(),
         ]);
@@ -184,6 +188,68 @@ class AuthController extends Controller
         $request->user()->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Logged out successfully.']);
+    }
+
+    /**
+     * Update user avatar.
+     */
+    public function updateAvatar(Request $request): JsonResponse
+    {
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        $user = $request->user();
+
+        // Delete old avatar if exists
+        if ($user->avatar_url) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($user->avatar_url);
+        }
+
+        $path = $request->file('avatar')->store('avatars', 'public');
+        $user->update(['avatar_url' => $path]);
+
+        return response()->json([
+            'message' => 'Avatar updated successfully',
+            'avatar_url' => asset('storage/' . $path)
+        ]);
+    }
+
+    /**
+     * Request password change code.
+     */
+    public function requestPasswordChange(Request $request): JsonResponse
+    {
+        $request->user()->sendVerificationCode();
+        return response()->json(['message' => 'verification_sent']);
+    }
+
+    /**
+     * Confirm password change.
+     */
+    public function confirmPasswordChange(Request $request): JsonResponse
+    {
+        $request->validate([
+            'code' => 'required|string|size:6',
+            'password' => 'required|string|min:8|regex:/[!@#$%^&*(),.?\":{}|<>]/',
+        ]);
+
+        $user = $request->user();
+
+        if ($user->verification_code !== $request->code) {
+            return response()->json(['message' => 'Invalid verification code.'], 400);
+        }
+
+        if ($user->verification_sent_at && now()->diffInMinutes($user->verification_sent_at) > 10) {
+            return response()->json(['message' => 'Verification code expired.'], 400);
+        }
+
+        $user->password = Hash::make($request->password);
+        $user->verification_code = null;
+        $user->verification_sent_at = null;
+        $user->save();
+
+        return response()->json(['message' => 'Password changed successfully']);
     }
 
     /**

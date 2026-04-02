@@ -113,6 +113,39 @@ export async function getCurrentUser(): Promise<User> {
   return apiRequest<User>("/user");
 }
 
+export async function updateAvatar(file: File): Promise<{ message: string; avatar_url: string }> {
+  const token = await getAuthToken();
+  const formData = new FormData();
+  formData.append("avatar", file);
+
+  const response = await fetch(`${API_PREFIX}/user/avatar`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ message: "Update failed" }));
+    throw new Error(errorData.message);
+  }
+
+  return response.json();
+}
+
+export async function requestPasswordChange(): Promise<void> {
+  await apiRequest<void>("/user/password/request", { method: "POST" });
+}
+
+export async function confirmPasswordChange(code: string, password: string): Promise<void> {
+  await apiRequest<void>("/user/password/confirm", {
+    method: "POST",
+    body: JSON.stringify({ code, password }),
+  });
+}
+
 /* ─── Resume / CV ─── */
 export async function uploadResume(file: File): Promise<ResumeProfile> {
   const token = await getAuthToken();

@@ -40,7 +40,7 @@ export interface User {
   name: string;
   email: string;
   tier: "freemium" | "premium";
-  avatarUrl?: string;
+  avatar_url?: string;
   usage?: UsageInfo;
 }
 
@@ -73,6 +73,7 @@ export interface ResumeProfile {
   id: string;
   userId: string;
   originalFilename: string;
+  pdf_url?: string;
   category?: string;
   extractedSkills: (string | { name: string; confidence: number })[];
   report?: ResumeReport;

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, Fragment } from "react";
 import type {
   User,
   UsageInfo,
@@ -13,7 +13,7 @@ import * as api from "@/lib/api";
  * JobHunt — Popup Shell (Fully Functional)
  * ═══════════════════════════════════════════════════════ */
 
-type NavTab = "home" | "skills" | "settings";
+type NavTab = "home" | "skills" | "settings" | "profile";
 
 /**
  * UsageResetTimer — A live ticking countdown until usage resets.
@@ -73,7 +73,9 @@ export default function App() {
   const [resume, setResume] = useState<ResumeProfile | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
-const [showEmailAuth, setShowEmailAuth] = useState(false);
+  const [showEmailAuth, setShowEmailAuth] = useState(false);
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const [isUpgrading, setIsUpgrading] = useState(false);
 
   /* ─── Boot: Check auth ─── */
   useEffect(() => {
@@ -148,6 +150,21 @@ const [showEmailAuth, setShowEmailAuth] = useState(false);
     }
   }, []);
 
+  /* ─── Premium Upgrade Handler ─── */
+  const handleUpgrade = useCallback(async () => {
+    setIsUpgrading(true);
+    try {
+      const res = await api.checkoutPremium();
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]?.id) chrome.tabs.update(tabs[0].id, { url: res.redirect_url });
+      });
+    } catch {
+      alert("Failed to initiate checkout. Please try again.");
+    } finally {
+      setIsUpgrading(false);
+    }
+  }, []);
+
   /* ═══ RENDER ═══ */
 
   // Loading state
@@ -181,25 +198,37 @@ const [showEmailAuth, setShowEmailAuth] = useState(false);
           <span className="text-base font-black tracking-tight text-primary font-headline">
             JobHunt
           </span>
-          {user.tier?.toLowerCase() === 'premium' ? (
-            <span className="premium-badge-gold">
-              <span className="material-symbols-outlined" style={{ fontSize: '12px', fontVariationSettings: "'FILL' 1" }}>
-                workspace_premium
+          <button 
+            onClick={() => setShowPremiumModal(true)}
+            className="flex items-center hover:opacity-80 active:scale-95 transition-all"
+          >
+            {user.tier?.toLowerCase() === 'premium' ? (
+              <span className="premium-badge-gold">
+                <span className="material-symbols-outlined" style={{ fontSize: '12px', fontVariationSettings: "'FILL' 1" }}>
+                  workspace_premium
+                </span>
+                Premium
               </span>
-              Premium
-            </span>
-          ) : (
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded uppercase text-on-surface-variant/50 bg-surface-container-high">
-              {user.tier}
-            </span>
-          )}
+            ) : (
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded uppercase text-on-surface-variant/50 bg-surface-container-high ring-1 ring-outline-variant/10">
+                {user.tier}
+              </span>
+            )}
+          </button>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-primary-container flex items-center justify-center">
-            <span className="text-on-primary text-[11px] font-bold">
-              {user.name?.charAt(0)?.toUpperCase() || "U"}
-            </span>
-          </div>
+          <button 
+            onClick={() => setActiveTab("profile")}
+            className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-primary-container flex items-center justify-center overflow-hidden hover:ring-2 hover:ring-primary/20 transition-all"
+          >
+            {user.avatar_url ? (
+              <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-on-primary text-[11px] font-bold">
+                {user.name?.charAt(0)?.toUpperCase() || "U"}
+              </span>
+            )}
+          </button>
         </div>
       </header>
 
@@ -225,9 +254,29 @@ const [showEmailAuth, setShowEmailAuth] = useState(false);
           <SkillsTab resume={resume} />
         )}
         {activeTab === "settings" && (
-          <SettingsTab user={user} usage={usage} onLogout={handleLogout} />
+          <SettingsTab 
+            user={user} 
+            usage={usage} 
+            onLogout={handleLogout} 
+            onTabChange={setActiveTab} 
+            isUpgrading={isUpgrading}
+            onUpgrade={handleUpgrade}
+          />
+        )}
+        {activeTab === "profile" && (
+          <ProfileTab user={user} onUpdateUser={(updated) => setUser({ ...user, ...updated })} />
         )}
       </main>
+
+      {/* ═══ Premium comparison Modal ═══ */}
+      {showPremiumModal && (
+        <PremiumModal 
+          onClose={() => setShowPremiumModal(false)} 
+          currentTier={user.tier} 
+          isUpgrading={isUpgrading}
+          onUpgrade={handleUpgrade}
+        />
+      )}
 
       {/* ═══ Bottom Navigation ═══ */}
       <BottomNav activeTab={activeTab} onTabChange={setActiveTab} />
@@ -579,10 +628,19 @@ function HomeTab({ user, usage, resume, isUploading, uploadError, onUploadCV, on
               </div>
             </div>
             <button
-              onClick={() => fileInputRef.current?.click()}
-              className="text-primary text-body-sm font-semibold hover:underline flex-shrink-0"
+              onClick={() => {
+                if (resume.pdf_url) {
+                  window.open(resume.pdf_url, '_blank');
+                } else {
+                  alert("This is an older analysis. Please re-upload your CV to view the original PDF file.");
+                  // Fallback for now if they still want the analysis
+                  window.open(`http://localhost:8000/resume/${resume.id}`, '_blank');
+                }
+              }}
+              className="bg-primary/10 text-primary px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-primary/20 transition-all flex items-center gap-1.5 flex-shrink-0"
             >
-              Re-upload
+              <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>visibility</span>
+              View Detail
             </button>
             <button
               onClick={onRemoveCV}
@@ -614,7 +672,7 @@ function HomeTab({ user, usage, resume, isUploading, uploadError, onUploadCV, on
             Daily AI Usage
           </span>
           <span className="text-label-sm font-bold text-primary">
-            {usage.used} of {usage.limit} used
+            {usage.remaining > 0 ? `${usage.used} of ${usage.limit} used` : "Daily limit reached"}
           </span>
         </div>
         <div className="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden mb-3">
@@ -647,7 +705,7 @@ function HomeTab({ user, usage, resume, isUploading, uploadError, onUploadCV, on
                 bolt
               </span>
             )}
-            {isUpgrading ? "Processing..." : "Upgrade to Premium — Rp 40.000"}
+            {isUpgrading ? "Processing..." : "Upgrade Rp 40.000/bulan"}
           </button>
         )}
       </section>
@@ -921,49 +979,234 @@ function SkillsTab({ resume }: { resume: ResumeProfile | null }) {
 /* ═══════════════════════════════════════════════════════
  * Settings Tab
  * ═══════════════════════════════════════════════════════ */
-function SettingsTab({ user, usage, onLogout }: { user: User; usage: UsageInfo; onLogout: () => void }) {
-  const [isUpgrading, setIsUpgrading] = useState(false);
+/* ═══════════════════════════════════════════════════════
+ * Profile Tab — Identity & Security
+ * ═══════════════════════════════════════════════════════ */
+function ProfileTab({ user, onUpdateUser }: { user: User; onUpdateUser: (updated: Partial<User>) => void }) {
+  const [isUpdatingAvatar, setIsUpdatingAvatar] = useState(false);
+  const [avatarError, setAvatarError] = useState("");
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
-  const handleUpgrade = async () => {
-    setIsUpgrading(true);
+  const [passwordStep, setPasswordStep] = useState<'idle' | 'requesting' | 'confirming'>('idle');
+  const [passCode, setPassCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [passError, setPassError] = useState('');
+  const [passMessage, setPassMessage] = useState('');
+  const [isPassLoading, setIsPassLoading] = useState(false);
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUpdatingAvatar(true);
+    setAvatarError("");
     try {
-      const res = await api.checkoutPremium();
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs[0]?.id) chrome.tabs.update(tabs[0].id, { url: res.redirect_url });
-      });
-    } catch {
-      alert("Failed to initiate checkout. Please try again.");
+      const res = await api.updateAvatar(file);
+      onUpdateUser({ avatar_url: res.avatar_url });
+    } catch (err) {
+      setAvatarError(err instanceof Error ? err.message : "Failed to update avatar");
     } finally {
-      setIsUpgrading(false);
+      setIsUpdatingAvatar(false);
+    }
+  };
+
+  const handleRequestPassCode = async () => {
+    setIsPassLoading(true);
+    setPassError("");
+    setPassMessage("");
+    try {
+      await api.requestPasswordChange();
+      setPasswordStep('confirming');
+      setPassMessage("Verification code sent to your email.");
+    } catch (err) {
+      setPassError(err instanceof Error ? err.message : "Request failed");
+    } finally {
+      setIsPassLoading(false);
+    }
+  };
+
+  const handleConfirmPassChange = async () => {
+    if (newPassword.length < 8) {
+      setPassError("Password must be at least 8 characters");
+      return;
+    }
+    setIsPassLoading(true);
+    setPassError("");
+    try {
+      await api.confirmPasswordChange(passCode, newPassword);
+      setPassMessage("Password changed successfully!");
+      setPasswordStep('idle');
+      setPassCode('');
+      setNewPassword('');
+    } catch (err) {
+      setPassError(err instanceof Error ? err.message : "Change failed");
+    } finally {
+      setIsPassLoading(false);
     }
   };
 
   return (
+    <div className="px-5 py-6 space-y-8 animate-[fadeIn_300ms_ease]">
+      <header>
+        <h2 className="font-headline font-bold text-2xl text-on-surface mb-1">Your Profile</h2>
+        <p className="text-body-sm text-on-surface-variant italic">Manage your identity and security</p>
+      </header>
+
+      {/* Identity Section */}
+      <section className="bg-surface-container-lowest ghost-border rounded-2xl p-5 flex flex-col items-center">
+        <div className="relative group mb-4">
+          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-primary-container flex items-center justify-center overflow-hidden shadow-ambient-lg ring-4 ring-white">
+            {user.avatar_url ? (
+              <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-on-primary text-3xl font-bold">
+                {user.name?.charAt(0)?.toUpperCase()}
+              </span>
+            )}
+            {isUpdatingAvatar && (
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                <div className="w-6 h-6 border-2 border-white/30 border-t-white animate-spin rounded-full" />
+              </div>
+            )}
+          </div>
+          <button 
+            onClick={() => avatarInputRef.current?.click()}
+            className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-primary text-on-primary shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-all"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>photo_camera</span>
+          </button>
+          <input ref={avatarInputRef} type="file" hidden accept="image/*" onChange={handleAvatarChange} />
+        </div>
+
+        <div className="text-center">
+          <h3 className="font-body font-bold text-lg text-on-surface leading-tight">{user.name}</h3>
+          <p className="text-body-sm text-on-surface-variant">{user.email}</p>
+          {avatarError && <p className="text-[10px] text-error font-bold mt-2">{avatarError}</p>}
+        </div>
+      </section>
+
+      {/* Security Section */}
+      <section className="space-y-4">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="material-symbols-outlined text-primary/40" style={{ fontSize: '20px' }}>security</span>
+          <h3 className="text-[11px] font-black uppercase tracking-wider text-on-surface-variant/70 italic">Security Controls</h3>
+        </div>
+
+        <div className="bg-surface-container-lowest ghost-border rounded-xl p-4">
+          {passwordStep === 'idle' ? (
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-bold text-on-surface">Update Password</p>
+                <p className="text-[11px] text-on-surface-variant leading-relaxed">Verification code will be sent to your email.</p>
+              </div>
+              <button 
+                onClick={handleRequestPassCode}
+                disabled={isPassLoading}
+                className="bg-primary/10 text-primary px-4 py-2 rounded-lg text-xs font-bold hover:bg-primary/20 transition-all disabled:opacity-50"
+              >
+                {isPassLoading ? (
+                  <div className="w-4 h-4 border-2 border-primary/30 border-t-primary animate-spin rounded-full" />
+                ) : (
+                  "Change"
+                )}
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-3 animate-[fadeIn_200ms_ease]">
+              <div className="flex justify-between items-center mb-1">
+                <p className="text-xs font-bold text-on-surface italic">Account Verification Required</p>
+                <button onClick={() => setPasswordStep('idle')} className="text-[10px] text-on-surface-variant/40 hover:text-error transition-colors uppercase font-bold">Cancel</button>
+              </div>
+              
+              <div className="space-y-2.5">
+                <div>
+                  <label className="text-[10px] font-bold text-on-surface-variant/60 uppercase ml-1">6-Digit Code</label>
+                  <input 
+                    type="text" 
+                    placeholder="000000"
+                    maxLength={6}
+                    value={passCode}
+                    onChange={(e) => setPassCode(e.target.value.replace(/\D/g, ''))}
+                    className="w-full px-4 py-2.5 rounded-lg bg-surface-container/50 border border-outline-variant/20 text-sm font-mono text-center tracking-[0.4em] focus:outline-none focus:border-primary transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-on-surface-variant/60 uppercase ml-1">New Password</label>
+                  <input 
+                    type="password" 
+                    placeholder="Min 8 chars + symbol"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-lg bg-surface-container/50 border border-outline-variant/20 text-sm focus:outline-none focus:border-primary transition-colors"
+                  />
+                </div>
+                <button 
+                  onClick={handleConfirmPassChange}
+                  disabled={isPassLoading || passCode.length !== 6 || newPassword.length < 8}
+                  className="w-full btn-primary py-2.5 text-xs font-bold shadow-ambient-md disabled:opacity-40 disabled:scale-100 disabled:shadow-none transition-all"
+                >
+                  {isPassLoading ? "Processing..." : "Update Password"}
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {passError && (
+            <p className="mt-3 px-3 py-2 bg-error/10 text-error text-[10px] font-bold rounded border border-error/20 italic">
+              🚨 {passError}
+            </p>
+          )}
+          {passMessage && !passError && (
+            <p className="mt-3 px-3 py-2 bg-secondary/10 text-secondary text-[10px] font-bold rounded border border-secondary/20 italic">
+              ✨ {passMessage}
+            </p>
+          )}
+        </div>
+      </section>
+
+      <div className="pt-4 text-center">
+        <button onClick={() => setPasswordStep('idle')} className="text-[10px] text-on-surface-variant/40 hover:text-primary transition-colors flex items-center justify-center gap-1 mx-auto">
+          <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>help</span>
+          Email changes are restricted for security.
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function SettingsTab({ user, usage, onLogout, onTabChange, isUpgrading, onUpgrade }: { 
+  user: User; 
+  usage: UsageInfo; 
+  onLogout: () => void; 
+  onTabChange: (tab: NavTab) => void;
+  isUpgrading: boolean;
+  onUpgrade: () => void;
+}) {
+
+  return (
     <div className="px-5 py-5 space-y-5">
       {/* Profile Card */}
-      <div className="bg-surface-container-lowest ghost-border rounded-xl p-4 flex items-center gap-3">
-        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary-container flex items-center justify-center flex-shrink-0">
-          <span className="text-on-primary text-lg font-bold">
-            {user.name?.charAt(0)?.toUpperCase() || "U"}
-          </span>
+      <button 
+        onClick={() => onTabChange("profile")}
+        className="w-full text-left bg-surface-container-lowest ghost-border rounded-xl p-4 flex items-center gap-3 hover:bg-surface-container-low transition-colors group"
+      >
+        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary-container flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm ring-2 ring-white">
+          {user.avatar_url ? (
+            <img src={user.avatar_url} alt={user.name} className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-on-primary text-lg font-bold">
+              {user.name?.charAt(0)?.toUpperCase() || "U"}
+            </span>
+          )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-body font-bold text-on-surface truncate">{user.name}</p>
+          <p className="font-body font-bold text-on-surface truncate group-hover:text-primary transition-colors">{user.name}</p>
           <p className="text-body-sm text-on-surface-variant truncate">{user.email}</p>
         </div>
-        {user.tier === 'premium' ? (
-          <span className="premium-badge-gold shadow-none">
-            <span className="material-symbols-outlined" style={{ fontSize: '10px', fontVariationSettings: "'FILL' 1" }}>
-              workspace_premium
-            </span>
-            Premium
-          </span>
-        ) : (
-          <span className="bg-surface-container text-on-surface-variant text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">
-            {user.tier}
-          </span>
-        )}
-      </div>
+        <span className="material-symbols-outlined text-on-surface-variant/30 group-hover:text-primary/50 transition-all group-hover:translate-x-0.5" style={{ fontSize: '20px' }}>
+          chevron_right
+        </span>
+      </button>
 
       {/* Plan & Usage */}
       <div className="bg-surface-container-lowest ghost-border rounded-xl p-4">
@@ -975,7 +1218,9 @@ function SettingsTab({ user, usage, onLogout }: { user: User; usage: UsageInfo; 
           </div>
           <div className="flex justify-between text-body-sm">
             <span className="text-on-surface-variant">Today's Usage</span>
-            <span className="text-on-surface font-semibold">{usage.used} / {usage.limit}</span>
+            <span className="text-on-surface font-semibold">
+              {usage.remaining > 0 ? `${usage.used} / ${usage.limit}` : "Limit reached"}
+            </span>
           </div>
           <div className="flex justify-between text-body-sm">
             <span className="text-on-surface-variant">Remaining</span>
@@ -999,7 +1244,7 @@ function SettingsTab({ user, usage, onLogout }: { user: User; usage: UsageInfo; 
             </div>
           </div>
           <button
-            onClick={handleUpgrade}
+            onClick={onUpgrade}
             disabled={isUpgrading}
             className={`w-full bg-on-primary-fixed text-white flex items-center justify-center gap-2 py-2.5 rounded-lg text-title-sm shadow-ambient-sm transition-all duration-normal ease-smooth ${
               isUpgrading ? "opacity-70 cursor-not-allowed" : "hover:shadow-ambient-md hover:brightness-105"
@@ -1010,7 +1255,7 @@ function SettingsTab({ user, usage, onLogout }: { user: User; usage: UsageInfo; 
             ) : (
               <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>bolt</span>
             )}
-            {isUpgrading ? "Processing..." : "Upgrade Rp 40.000/mo"}
+            {isUpgrading ? "Processing..." : "Upgrade Rp 40.000/bulan"}
           </button>
         </div>
       )}
@@ -1070,5 +1315,90 @@ function BottomNav({ activeTab, onTabChange }: { activeTab: NavTab; onTabChange:
         );
       })}
     </nav>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════
+ * Premium info Modal
+ * ═══════════════════════════════════════════════════════ */
+function PremiumModal({ onClose, currentTier, isUpgrading, onUpgrade }: { 
+  onClose: () => void; 
+  currentTier: string;
+  isUpgrading: boolean;
+  onUpgrade: () => void;
+}) {
+  const features = [
+    { name: "Daily AI Scans", free: "5 per day", premium: "20 per day", icon: "query_stats" },
+    { name: "Skills Analysis", free: "Basic matching", premium: "Deep domain audit", icon: "psychology" },
+    { name: "Career Insights", free: "Standard speed", premium: "Ultra-fast response", icon: "rocket_launch" },
+  ];
+
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[100] p-4 backdrop-blur-sm animate-[fadeIn_200ms_ease]">
+      <div className="bg-surface rounded-3xl shadow-ambient-lg w-full max-w-[380px] overflow-hidden border border-outline-variant/10">
+        <header className="px-6 py-5 bg-gradient-to-br from-surface to-surface-container-low flex justify-between items-center border-b border-outline-variant/10">
+          <div>
+            <h2 className="text-lg font-headline font-black text-on-surface">Plan Comparison</h2>
+            <p className="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest mt-0.5 italic">Upgrade Your Career</p>
+          </div>
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-surface-container transition-colors">
+            <span className="material-symbols-outlined text-on-surface-variant" style={{ fontSize: '20px' }}>close</span>
+          </button>
+        </header>
+
+        <div className="p-4 space-y-4 max-h-[400px] overflow-y-auto scrollbar-hide">
+          {/* Comparison Table */}
+          <div className="grid grid-cols-5 gap-y-5">
+            <div className="col-span-2"></div>
+            <div className="col-span-1.5 text-center text-[10px] font-black tracking-widest uppercase text-on-surface-variant/40 italic">Freemium</div>
+            <div className="col-span-1.5 text-center text-[10px] font-black tracking-widest uppercase text-primary/80 italic">Premium</div>
+
+            {features.map((f, i) => (
+              <Fragment key={i}>
+                <div className="col-span-2 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-outline" style={{ fontSize: '16px' }}>{f.icon}</span>
+                  <span className="text-[11px] font-bold text-on-surface">{f.name}</span>
+                </div>
+                <div className="col-span-1.5 flex justify-center items-center">
+                  <span className="text-[10px] font-medium text-on-surface-variant/60">{f.free}</span>
+                </div>
+                <div className="col-span-1.5 flex justify-center items-center">
+                  <span className="text-[10px] font-bold text-secondary">{f.premium}</span>
+                </div>
+              </Fragment>
+            ))}
+          </div>
+
+          <div className="bg-primary/5 rounded-2xl p-4 ghost-border">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="material-symbols-outlined text-primary" style={{ fontSize: '18px' }}>stars</span>
+              </div>
+              <div>
+                <p className="text-xs font-bold text-on-surface">Unlimited Access</p>
+                <p className="text-[10px] text-on-surface-variant">Unlock the full power of our Cognitive Engine.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {currentTier !== 'premium' && (
+          <div className="px-6 py-5 bg-surface-container-lowest">
+            <button 
+              onClick={onUpgrade}
+              disabled={isUpgrading}
+              className="btn-primary w-full py-3.5 shadow-ambient-md text-sm flex items-center justify-center gap-2"
+            >
+              {isUpgrading ? (
+                <div className="w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+              ) : (
+                <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>bolt</span>
+              )}
+              {isUpgrading ? "Processing..." : "Upgrade Rp 40.000/bulan"}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

@@ -36,8 +36,12 @@ class ResumeController extends Controller
 
         // Check usage limit
         if (!$user->canAnalyze()) {
+            $message = $user->tier === 'premium' 
+                ? 'Daily analysis limit reached.'
+                : 'Daily analysis limit reached. Upgrade to Premium for 20x higher limits.';
+
             return response()->json([
-                'message' => 'Daily analysis limit reached. Upgrade to Premium for 20x higher limits.',
+                'message' => $message,
                 'usage'   => $user->getUsageData(),
             ], 429);
         }
@@ -60,11 +64,15 @@ class ResumeController extends Controller
         $extractedSkills = $report['extracted_data']['skills_hard'] ?? [];
         $category = $report['analysis_metadata']['primary_domain'] ?? 'General Professional';
 
+        // Store physical PDF file
+        $path = $file->store('resumes', 'public');
+
         // Create or update the user's resume profile
         $profile = ResumeProfile::updateOrCreate(
             ['user_id' => $user->id],
             [
                 'original_filename' => $file->getClientOriginalName(),
+                'file_path'         => $path,
                 'category'          => $category,
                 'extracted_text'    => $extractedText,
                 'extracted_skills'  => $extractedSkills,
@@ -79,6 +87,7 @@ class ResumeController extends Controller
             'id'               => $profile->id,
             'userId'           => $profile->user_id,
             'originalFilename' => $profile->original_filename,
+            'pdf_url'          => asset('storage/' . $profile->file_path),
             'category'         => $profile->category,
             'extractedSkills'  => $profile->extracted_skills,
             'report'           => $profile->report,
@@ -106,6 +115,7 @@ class ResumeController extends Controller
             'id'               => $profile->id,
             'userId'           => $profile->user_id,
             'originalFilename' => $profile->original_filename,
+            'pdf_url'          => $profile->file_path ? asset('storage/' . $profile->file_path) : null,
             'category'         => $profile->category,
             'extractedSkills'  => $profile->extracted_skills,
             'report'           => $profile->report,

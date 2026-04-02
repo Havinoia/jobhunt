@@ -27,9 +27,12 @@ Route::post('/webhooks/pakasir', [SubscriptionController::class, 'webhook']);
 /* ─── Protected Routes (Sanctum Auth) ─── */
 Route::middleware('auth:sanctum')->group(function () {
 
-    /* ── Authentication ── */
+    /* ── Authentication & Profile ── */
     Route::get('/user', [AuthController::class, 'me']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
+    Route::post('/user/avatar', [AuthController::class, 'updateAvatar']);
+    Route::post('/user/password/request', [AuthController::class, 'requestPasswordChange']);
+    Route::post('/user/password/confirm', [AuthController::class, 'confirmPasswordChange']);
 
     /* ── Subscription ── */
     Route::post('/subscription/checkout', [SubscriptionController::class, 'checkout']);
