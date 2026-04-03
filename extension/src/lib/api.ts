@@ -14,7 +14,9 @@ import type {
 // Configuration
 const API_BASE_URL =
   (typeof chrome !== "undefined" &&
-    chrome.runtime?.getManifest?.()?.host_permissions?.[1]?.replace("/*", "")) ||
+    chrome.runtime?.getManifest?.()?.host_permissions?.find((p: string) => 
+      p.startsWith("http") && !p.includes("linkedin")
+    )?.replace("/*", "")) ||
   "http://localhost:8000";
 
 const API_PREFIX = `${API_BASE_URL}/api`;

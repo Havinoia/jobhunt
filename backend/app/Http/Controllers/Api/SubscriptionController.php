@@ -69,22 +69,41 @@ class SubscriptionController extends Controller
             if ($decoded) $payload = $decoded;
         }
 
-        \Illuminate\Support\Facades\Log::info('Pakasir Webhook Payload Received:', $payload);
+        \Illuminate\Support\Facades\Log::info('[Pakasir Webhook] Received:', $payload);
         
-        $orderId = $payload['order_id'] ?? '';
-        $status = $payload['status'] ?? ''; // 'success', 'completed', etc.
+        $orderId = $payload['order_id'] ?? null;
+        $status = $payload['status'] ?? null; // 'success', 'completed', etc.
+        $amount = $payload['amount'] ?? null;
 
+        if (!$orderId || !$status) {
+            \Illuminate\Support\Facades\Log::warning('[Pakasir Webhook] Incomplete payload.', ['payload' => $payload]);
+            return response()->json(['status' => 'error', 'message' => 'Incomplete payload'], 400);
+        }
+
+        // Process only PREMIUM subscription orders
         if (strpos($orderId, 'PREMIUM_') === 0) {
             if ($status === 'success' || $status === 'completed') {
                 $parts = explode('_', $orderId);
-                $userId = $parts[1] ?? '';
+                $userId = $parts[1] ?? null;
+
                 if ($userId) {
-                    $user = \App\Models\User::find($userId);
-                    if ($user) {
-                        $user->update(['tier' => 'premium']);
-                        \Illuminate\Support\Facades\Log::info("User {$userId} upgraded to premium successfully.");
+                    try {
+                        \Illuminate\Support\Facades\DB::transaction(function () use ($userId, $orderId) {
+                            $user = \App\Models\User::lockForUpdate()->find($userId);
+                            if ($user && $user->tier !== 'premium') {
+                                $user->update(['tier' => 'premium']);
+                                \Illuminate\Support\Facades\Log::info("[Pakasir Webhook] User {$userId} upgraded to premium. Order ID: {$orderId}");
+                            }
+                        });
+                    } catch (\Exception $e) {
+                        \Illuminate\Support\Facades\Log::error("[Pakasir Webhook] Database error for user {$userId}: " . $e->getMessage());
+                        return response()->json(['status' => 'error', 'message' => 'Database error'], 500);
                     }
+                } else {
+                    \Illuminate\Support\Facades\Log::warning("[Pakasir Webhook] Valid status but no User ID found in Order ID: {$orderId}");
                 }
+            } else {
+                \Illuminate\Support\Facades\Log::info("[Pakasir Webhook] Order {$orderId} status: {$status}. No action taken.");
             }
         }
 

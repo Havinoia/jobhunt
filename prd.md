@@ -51,7 +51,7 @@ sequenceDiagram
 ```
 
 ## 6. Database Schema
-Database akan menggunakan PostgreSQL. Berikut adalah struktur tabel dasar untuk mendukung fitur-fitur aplikasi.
+Database akan menggunakan PostgreSQL (lokal). Berikut adalah struktur tabel dasar untuk mendukung fitur-fitur aplikasi.
 
 **Daftar Tabel Utama:**
 1. `users`: Menyimpan data pengguna dan hak akses.
@@ -104,10 +104,10 @@ Pilihan teknologi disesuaikan dengan kebutuhan integrasi UI LinkedIn (*Shadow DO
 - **Backend (API Server):**
   - **Framework:** Laravel (PHP 8.x) sebagai pengelola *Business Logic*, autentikasi, penyimpan data, dan jembatan ke API eksternal.
 - **Database:**
-  - PostgreSQL (Relational database yang tangguh untuk menyimpan data user dan tracker berbasis JSON untuk *skills*).
+  - PostgreSQL (Relational database yang tangguh untuk pengembangan lokal).
 - **AI Service:**
   - Google Gemini API (Untuk pemrosesan NLP: Ekstraksi keahlian dari CV dan *Match Scoring* loker).
 - **Deployment:**
   - Backend API & Landing Page: Vercel.
-  - Ekstensi Database: Supabase / Neon (Managed PostgreSQL).
+  - Database Lokal: PostgreSQL.
   - Ekstensi Klien: Dipublikasikan ke Google Chrome Web Store.
