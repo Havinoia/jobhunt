@@ -59,4 +59,27 @@ Dapatkan hasil maksimal dengan beralih ke **Premium Plan**:
 
 ---
 
+## 💡 Testing & Quality Assurance
+
+Project ini telah melewati pengujian menyeluruh untuk memastikan keandalan fitur inti baik di sisi Extension maupun Backend.
+
+### 🧪 Backend API Testing
+Kami menggunakan **PHPUnit** untuk melakukan *Feature Testing* pada endpoint kritikal Laravel:
+*   **Authentication**: Registrasi user baru, verifikasi email via 6-digit code, login standar, dan integrasi Google OAuth.
+*   **Job Tracker**: Analisis AI (mocked), simpan pekerjaan ke tracker, update status (Applied/Interview/Rejected), dan penghapusan data.
+*   **Resume Profile**: Sinkronisasi upload PDF, ekstraksi skill via Gemini AI, dan manajemen file storage.
+*   **Usage Limits**: Verifikasi pembatasan kuota analisis harian untuk user Freemium vs Premium.
+
+### 🛠️ Extension Testing
+*   **TypeScript Type Checking**: Memastikan keamanan tipe data di seluruh codebase React/Vite.
+*   **Production Build Validation**: Verifikasi bahwa proses bundling extension berjalan lancar dan siap untuk di-deploy ke Chrome Web Store.
+
+> **Cara Menjalankan Test Backend:**
+> ```powershell
+> cd backend
+> php artisan test
+> ```
+
+---
+
 **JobHunt v1.0.0** — Didesain dengan penuh dedikasi untuk mempercepat perjalanan karir Anda. 💼✨
